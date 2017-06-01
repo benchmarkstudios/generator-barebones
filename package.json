@@ -1,0 +1,29 @@
+{
+  "name": "generator-barebones",
+  "version": "1.0.0",
+  "description": "A lightweight, skeletal, responsive WordPress boilerplate theme for HTML5 and beyond. Great as a starting point with powerful features to encourage rapid development for most projects.",
+  "files": [
+    "app"
+  ],
+  "keywords": [
+    "yeoman-generator"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/benchamrkstudios/generator-barebones"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Benchmark Studios",
+  "license": "MIT",
+  "dependencies": {
+    "adm-zip": "^0.4.7",
+    "mv": "^2.1.1",
+    "request": "^2.81.0",
+    "rimraf": "^2.6.1",
+    "tar-to-zip": "^1.3.4",
+    "unzip": "^0.1.11",
+    "yeoman-generator": "^1.1.1"
+  }
+}
