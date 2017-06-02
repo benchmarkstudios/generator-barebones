@@ -55,6 +55,15 @@ let templatePath = null;
 
 const log = console.log;
 
+/**
+ * zippinator
+ * @param  {Mixed} zipballUri
+ * @param  {String}  target
+ * @param  {String}  localName
+ * @param  {String}  entry
+ * @param  {Boolean} callback
+ * @return {Mixed}
+ */
 const zipinator = (zipballUri = false, target = config.tmp, localName = 'zipinator', entry = localName, callback = false) => {
   if (!zipballUri) {
     return false;
@@ -102,6 +111,11 @@ const zipinator = (zipballUri = false, target = config.tmp, localName = 'zipinat
   });
 };
 
+/**
+ * Handle readme file
+ * @param  {string} projectName
+ * @return {mixed}
+ */
 const readmenator = (projectName) => {
   const file = 'README.md';
   fs.readFile(`${templatePath}/${file}`, 'utf8', (err, data) => {
@@ -110,9 +124,9 @@ const readmenator = (projectName) => {
       return log(err);
     }
     const result = data.replace(/{{ name }}/g, projectName);
-    return fs.writeFile(`${config.dir}/${file}`, result, (err) => {
-      if (err) {
-        return log(err);
+    return fs.writeFile(`${config.dir}/${file}`, result, (error) => {
+      if (error) {
+        return log(error);
       }
 
       return true;
@@ -120,9 +134,14 @@ const readmenator = (projectName) => {
   });
 };
 
-const pluginator = (plugins, callback) => {
-  Object.keys(plugins).forEach((key) => {
-    if (plugins[key]) {
+/**
+ * go through plugins and zipinator them
+ * @param  {object}   pluginsObject
+ * @param  {Function} callback
+ */
+const pluginator = (pluginsObject, callback) => {
+  Object.keys(pluginsObject).forEach((key) => {
+    if (pluginsObject[key]) {
       zipinator(pluginZipballs[key], `${config.dir}/wp-content/plugins/${pluginNames[key.replace('plugin_', '')]}`, pluginNames[key.replace('plugin_', '')]);
     }
   });
@@ -130,15 +149,21 @@ const pluginator = (plugins, callback) => {
   return callback();
 };
 
+/**
+ * The Generator
+ */
 module.exports = class extends Generator {
   constructor(args, opts) {
     super(args, opts);
 
-    console.log(config.dir);
     templatePath = this.sourceRoot();
     this.argument('projectName', { type: String, required: true });
   }
 
+  /**
+   * Step 1 - prompts
+   * @return {Mixed}
+   */
   prompting() {
     const items = [];
     Object.keys(plugins).forEach((key) => {
@@ -169,6 +194,10 @@ module.exports = class extends Generator {
     });
   }
 
+  /**
+   * Step 2 - barebones
+   * @return {Mixed}
+   */
   barebones() {
     if (!fs.existsSync(config.tmp)) {
       fs.mkdirSync(config.tmp);
