@@ -44,7 +44,7 @@ const pluginZipballs = {
 };
 
 const config = {
-  dir: './wp',
+  dir: './',
   tmp: './.tmp',
   template: './template',
   wpZipball: 'https://wordpress.org/latest.zip',
