@@ -1,6 +1,6 @@
 {
   "name": "generator-barebones",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "A lightweight, skeletal, responsive WordPress boilerplate theme for HTML5 and beyond. Great as a starting point with powerful features to encourage rapid development for most projects.",
   "files": [
     "app"
@@ -10,7 +10,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/benchamrkstudios/generator-barebones"
+    "url": "git+https://github.com/benchmarkstudios/generator-barebones"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
