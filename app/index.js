@@ -2,7 +2,7 @@ const Generator = require('yeoman-generator');
 const request = require('request');
 const fs = require('fs');
 const unzip = require('unzip');
-const mv = require('mv');
+const copy = require('copy');
 const rimraf = require('rimraf');
 
 const unwantedFiles = [
@@ -44,14 +44,14 @@ const pluginZipballs = {
 };
 
 const config = {
-  dir: './',
+  dir: process.cwd(),
   tmp: './.tmp',
-  template: './template',
   wpZipball: 'https://wordpress.org/latest.zip',
   barebonesZipball: 'https://github.com/benchmarkstudios/barebones/archive/master.zip',
 };
 
 let afcLicence = null;
+let templatePath = null;
 
 const log = console.log;
 
@@ -85,22 +85,17 @@ const zipinator = (zipballUri = false, target = config.tmp, localName = 'zipinat
     log(`🗄 Unzipping ${localName}..`);
 
     fs.createReadStream(`${config.tmp}/${local}`).pipe(unzip.Extract({ path: config.tmp })).on('finish', () => {
-      rimraf(target, () => {
-        mv(`${config.tmp}/${entry}`, target, (err) => {
-          if (!err) {
-            rimraf(`${config.tmp}/${entry}`, () => {
-              log(`🔥 ${config.tmp}/${entry}`);
-            });
-            rimraf(`${config.tmp}/${local}`, () => {
-              log(`🔥 ${config.tmp}/${local}`);
-            });
+      rimraf(`${config.tmp}/${local}`, () => {
+        log(`🔥 ${config.tmp}/${local}`);
 
-            if (callback) {
-              return callback();
-            }
+        return copy(`${config.tmp}/${entry}/**/*`, `${target}/`, () => {
+          // rimraf(`${config.tmp}/${entry}`, () => {
+          //   log(`🔥 ${config.tmp}/${entry}`);
+          // });
+
+          if (callback) {
+            return callback();
           }
-
-          return true;
         });
       });
     });
@@ -109,7 +104,7 @@ const zipinator = (zipballUri = false, target = config.tmp, localName = 'zipinat
 
 const readmenator = (projectName) => {
   const file = 'README.md';
-  fs.readFile(`${config.template}/${file}`, 'utf8', (err, data) => {
+  fs.readFile(`${templatePath}/${file}`, 'utf8', (err, data) => {
     log(`✏️ Generating ${file} file..`);
     if (err) {
       return log(err);
@@ -125,18 +120,22 @@ const readmenator = (projectName) => {
   });
 };
 
-const pluginator = (plugins) => {
+const pluginator = (plugins, callback) => {
   Object.keys(plugins).forEach((key) => {
     if (plugins[key]) {
       zipinator(pluginZipballs[key], `${config.dir}/wp-content/plugins/${pluginNames[key.replace('plugin_', '')]}`, pluginNames[key.replace('plugin_', '')]);
     }
   });
+
+  return callback();
 };
 
 module.exports = class extends Generator {
   constructor(args, opts) {
     super(args, opts);
 
+    console.log(config.dir);
+    templatePath = this.sourceRoot();
     this.argument('projectName', { type: String, required: true });
   }
 
@@ -171,21 +170,23 @@ module.exports = class extends Generator {
   }
 
   barebones() {
+    if (!fs.existsSync(config.tmp)) {
+      fs.mkdirSync(config.tmp);
+    }
+
     this.log('\nCool, setting you up! 🚀\n');
 
     zipinator(config.wpZipball, config.dir, 'wordpress', 'wordpress', () => {
-      this.log('🚧 Cleaning up unwanted files..');
-      unwantedFiles.forEach((file) => {
-        rimraf(config.dir + file, () => {
-          this.log(`🔥 ${file}`);
+      zipinator(config.barebonesZipball, `${config.dir}/wp-content/themes/${this.options.projectName}`, 'barebones', 'barebones-master');
+      readmenator(this.options.projectName);
+      pluginator(this.plugins, () => {
+        this.log('🚧 Cleaning up unwanted files..');
+        unwantedFiles.forEach((file) => {
+          rimraf(config.dir + file, () => {
+            this.log(`🔥 ${file}`);
+          });
         });
       });
-
-      zipinator(config.barebonesZipball, `${config.dir}/wp-content/themes/${this.options.projectName}`, 'barebones', 'barebones-master');
-
-      readmenator(this.options.projectName);
-
-      pluginator(this.plugins);
     });
   }
 };
